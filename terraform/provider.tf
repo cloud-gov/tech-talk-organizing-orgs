@@ -12,3 +12,7 @@ provider "cloudfoundry" {
   user     = var.cf_username
   password = var.cf_password
 }
+
+data "cloudfoundry_org" "org" {
+  name = var.cf_org
+}
