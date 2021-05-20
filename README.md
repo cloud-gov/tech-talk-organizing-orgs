@@ -1,2 +1,2 @@
-# tech-talk-organizing-orgs
-Tech Talk: Organizing your org
+# Tech Talk: Organizing your org
+
