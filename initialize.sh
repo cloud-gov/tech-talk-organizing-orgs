@@ -27,9 +27,8 @@ cf t -s primordial-soup
 cf create-space-quota primordial-soup-quota -r 0 -s 1 -a 0 
 cf set-space-quota primordial-soup primordial-soup-quota
 
-# Create the service account. The role here doesn't really matter as we will
-# assign OrgManager next
-cf create-service cloud-gov-service-account space-auditor terraform-service-account
+# Create the service account.
+cf create-service cloud-gov-service-account space-deployer terraform-service-account
 cf create-service-key terraform-service-account terraform-service-key
 
 # Extract the username for the service account
@@ -39,10 +38,14 @@ service_key_username=$(echo "$service_key_json" | jq -r '.credentials.username')
 service_key_password=$(echo "$service_key_json" | jq -r '.credentials.password')
 
 # Set the service account as an org manager
-cf set-org-role $service_key_username $org_name OrgManager
+cf set-org-role $service_key_username $org_name OrgManager --origin uaa
 
 # Create our creds.tfvars for terraform based on the service account
 echo 'cf_api = "https://api.fr.cloud.gov"' > terraform/creds.tfvars
 echo 'cf_username = "'"${service_key_username}"'"' >> terraform/creds.tfvars
 echo 'cf_password = "'"${service_key_password}"'"' >> terraform/creds.tfvars
 echo 'cf_org = "'"${org_name}"'"' >> terraform/creds.tfvars
+
+service_account_guid=$(cf curl "/v3/users?usernames=${service_key_username}" | jq -r '.resources[].guid')
+echo "Service Account created for terraform. Be sure to use the service guid when assigning this account roles via terraform. "
+echo "Service account guid: ${service_account_guid}"
